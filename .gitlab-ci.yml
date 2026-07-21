@@ -8,12 +8,17 @@ variables:
 
 build:
   stage: build
+  tags:
+    - student-app
   script:
+    - docker --version
     - docker build -t $IMAGE_NAME:$CI_COMMIT_SHORT_SHA .
     - docker tag $IMAGE_NAME:$CI_COMMIT_SHORT_SHA $IMAGE_NAME:latest
 
 push:
   stage: push
+  tags:
+    - student-app
   script:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     - docker push $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
@@ -21,6 +26,8 @@ push:
 
 deploy:
   stage: deploy
+  tags:
+    - student-app
   script:
     - kubectl set image deployment/student-app student-app=$IMAGE_NAME:latest -n student-ns
     - kubectl rollout status deployment/student-app -n student-ns
