@@ -12,8 +12,7 @@ build:
     - student-app
   script:
     - docker --version
-    - docker build -t $IMAGE_NAME:$CI_COMMIT_SHORT_SHA .
-    - docker tag $IMAGE_NAME:$CI_COMMIT_SHORT_SHA $IMAGE_NAME:latest
+    - docker build -t vishalpawar2672/student-app:latest .
 
 push:
   stage: push
@@ -21,8 +20,7 @@ push:
     - student-app
   script:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - docker push $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
-    - docker push $IMAGE_NAME:latest
+    - docker push vishalpawar2672/student-app:latest
 
 deploy:
   stage: deploy
