@@ -1,0 +1,1 @@
+gitlab_runner_token = "glrt-<YOUR_GEILAB_TOKEN>"
