@@ -1,0 +1,48 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: student-app
+  namespace: student-ns
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: student-app
+
+  template:
+    metadata:
+      labels:
+        app: student-app
+
+    spec:
+      containers:
+        - name: student-app
+          image: vishalpawar2672/student-app:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 80
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+          env:
+            - name: DB_HOST
+              value: mysql
+
+            - name: DB_NAME
+              value: studentdb
+
+            - name: DB_USER
+              value: root
+
+            - name: DB_PASSWORD
+              value: root123

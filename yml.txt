@@ -123,6 +123,7 @@ spec:
 
   hostPath:
     path: /data/mysql
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -152,7 +153,8 @@ spec:
 
   type: ClusterIP
 apiVersion: v1
+
+
 kind: Namespace
 metadata:
   name: student-ns
-ubuntu@ip-172-31-3-4:~$

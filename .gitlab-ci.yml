@@ -26,6 +26,50 @@ deploy:
   stage: deploy
   tags:
     - student-app
+  |
+      if kind get clusters | grep -q "^student22$"; then
+        echo "Kind cluster already exists."
+      else
+        kind create cluster --name student22 --config kubernetes/config.yml
+      fi
+
+    # Wait for cluster
+    - kubectl wait --for=condition=Ready node --all --timeout=180s
+
+    # Create Namespace only if it doesn't exist
+    - |
+      if kubectl get namespace student-ns >/dev/null 2>&1; then
+        echo "Namespace already exists."
+      else
+        kubectl apply -f kubernetes/namespace.yml
+      fi
+
+    # Create PV only if it doesn't exist
+    - |
+      if kubectl get pv mysql-pv >/dev/null 2>&1; then
+        echo "PV already exists."
+      else
+        kubectl apply -f kubernetes/pv.yml
+      fi
+
+    # Create PVC only if it doesn't exist
+    - |
+      if kubectl get pvc mysql-pvc -n bank-ns >/dev/null 2>&1; then
+        echo "PVC already exists."
+      else
+        kubectl apply -f kubernetes/pvc.yml
+      fi
+
+deploy:
+  stage: deploy
+  tags:
+    - bank-automate
+
   script:
-    - kubectl set image deployment/student-app student-app=$IMAGE_NAME:latest -n student-ns
-    - kubectl rollout status deployment/student-app -n student-ns
+    - kubectl apply -f kubernetes/mysql-service.yml
+    - kubectl apply -f kubernetes/mysql-deployment.yml
+    - kubectl apply -f kubernetes/service.yml
+    - kubectl apply -f kubernetes/deployment.yml
+
+    - kubectl rollout status deployment/student-app -n bank-ns
+    - kubectl get all -n student-ns

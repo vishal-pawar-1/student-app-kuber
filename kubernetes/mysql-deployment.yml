@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: mysql
+  namespace: student-ns
+
+spec:
+  replicas: 1
+  serviceName: mysql-service
+
+  selector:
+    matchLabels:
+      app: mysql
+
+  template:
+    metadata:
+      labels:
+        app: mysql
+
+    spec:
+      nodeSelector:
+        database: mysql
+
+      containers:
+        - name: mysql
+          image: mysql:8.0
+
+          ports:
+            - containerPort: 3306
+
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: root123
+
+            - name: MYSQL_DATABASE
+              value: studentdb
+
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc

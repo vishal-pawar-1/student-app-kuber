@@ -1,6 +1,6 @@
 <?php
 
-$host = "mysql";      // Kubernetes मध्ये हा Service name असेल
+$host = "mysql";     
 $user = "root";
 $password = "root123";
 $database = "studentdb";
