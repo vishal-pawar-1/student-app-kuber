@@ -19,8 +19,7 @@ spec:
         app: mysql
 
     spec:
-      nodeSelector:
-        database: mysql
+   
 
       containers:
         - name: mysql

@@ -4,72 +4,81 @@ stages:
   - deploy
 
 variables:
-  IMAGE_NAME: $DOCKER_USERNAME/student-app
+  IMAGE_NAME: "$DOCKER_USERNAME/student-app"
 
 build:
   stage: build
   tags:
     - student-app
+
   script:
     - docker --version
-    - docker build -t vishalpawar2672/student-app:latest .
+    - docker build -t "$IMAGE_NAME:latest" .
 
 push:
   stage: push
   tags:
     - student-app
+
   script:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - docker push vishalpawar2672/student-app:latest
+    - docker push "$IMAGE_NAME:latest"
 
 deploy:
   stage: deploy
   tags:
     - student-app
-  |
+
+  script:
+
+    # Create Kind cluster if is not exist
+    - |
       if kind get clusters | grep -q "^student22$"; then
         echo "Kind cluster already exists."
       else
         kind create cluster --name student22 --config kubernetes/config.yml
       fi
 
-    # Wait for cluster
+    # Wait for node
     - kubectl wait --for=condition=Ready node --all --timeout=180s
 
-    # Create Namespace only if it doesn't exist
+    # Create Namespace
     - |
       if kubectl get namespace student-ns >/dev/null 2>&1; then
-        echo "Namespace already exists."
+        echo "Namespace student-ns already exists."
       else
         kubectl apply -f kubernetes/namespace.yml
       fi
 
-    # Create PV only if it doesn't exist
+    # Create Pv
     - |
       if kubectl get pv mysql-pv >/dev/null 2>&1; then
-        echo "PV already exists."
+        echo "PV mysql-pv already exists."
       else
         kubectl apply -f kubernetes/pv.yml
       fi
 
-    # Create PVC only if it doesn't exist
+    # Create Pvc
     - |
-      if kubectl get pvc mysql-pvc -n bank-ns >/dev/null 2>&1; then
-        echo "PVC already exists."
+      if kubectl get pvc mysql-pvc -n student-ns >/dev/null 2>&1; then
+        echo "PVC mysql-pvc already exists."
       else
         kubectl apply -f kubernetes/pvc.yml
       fi
 
-deploy:
-  stage: deploy
-  tags:
-    - bank-automate
 
-  script:
     - kubectl apply -f kubernetes/mysql-service.yml
+
+
     - kubectl apply -f kubernetes/mysql-deployment.yml
+
+
     - kubectl apply -f kubernetes/service.yml
+
     - kubectl apply -f kubernetes/deployment.yml
 
-    - kubectl rollout status deployment/student-app -n bank-ns
-    - kubectl get all -n student-ns
+    - kubectl rollout status deployment/student-app -n student-ns --timeout=180s
+
+    - kubectl get deployment -n student-ns
+
+    - kubectl get pods -n student-ns
